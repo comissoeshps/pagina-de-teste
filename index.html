@@ -876,6 +876,97 @@ const EQUIPES=[
 ];
 
 // Coleta todas as keys multiprofissionais para scoring
+function load(){try{data=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){data=[]}}
+
+function persist(){localStorage.setItem(KEY,JSON.stringify(data))}
+
+function show(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  $(id).classList.add('active');
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+function norm(v){return v==='não'?'nao':v==='não se aplica'?'na':v}
+
+function label(v){return v==='sim'?'sim':v==='nao'?'não':v==='na'?'N/A':'—'}
+
+function cls(v){return v==='sim'?'sim':v==='nao'?'nao':'na'}
+
+function fillSectors(){$('sector').innerHTML='<option value="">Selecione</option>'+SETORES.map(s=>`<option>${s}</option>`).join('')}
+
+function fillAuditores(){$('auditorList').innerHTML=AUDITORES.map(a=>`<option value="${a}"></option>`).join('')}
+
+function renderChoices(key, opts){
+  return `<div class="choices">${opts.map(o=>{
+    const v=norm(o);
+    return `<button class="choice ${current[key]===v?'sel '+cls(v):''}" onclick="setVal('${key}','${v}')">${o}</button>`;
+  }).join('')}</div>`;
+}
+
+function renderForm(){
+  $('form').innerHTML=ITEMS.map(it=>`
+    <div class="item${it.novo?' novo':''}${lockedItemNums.has(it.num)?' locked':''}">
+      <div class="domain" style="color:${DOMAIN_MAP[it.domain]}">${it.domain}</div>
+      <div class="item-header">
+        <div class="num${it.novo?' new':''}">${it.num}</div>
+        <div class="item-text">${it.text}</div>
+      </div>
+      ${renderChoices(it.num, it.opts)}
+    </div>`).join('');
+}
+
+function renderMultiForm(){
+  $('multi-form').innerHTML=EQUIPES.map(eq=>{
+    const presVal=current[eq.keyPresenca];
+    const showSub=presVal==='sim';
+    return `
+    <div class="equipe-block ${eq.cssBlock}">
+      <div class="equipe-header">
+        <div>
+          <div class="equipe-title" style="color:${eq.cor}">${eq.label}</div>
+          <div class="equipe-sub">Registro de atividade multiprofissional</div>
+        </div>
+      </div>
+      <div class="sub-item">
+        <div class="sub-item-text"><strong>${eq.presencaText}</strong></div>
+        ${renderChoices(eq.keyPresenca, ['sim','não','não se aplica'])}
+      </div>
+      <div class="sub-items ${showSub?'visible':''}">
+        ${eq.subItens.map(si=>{
+          const siVal=current[si.key];
+          const showSS=siVal==='sim'&&si.subSub.length>0;
+          return `
+          <div class="sub-item">
+            <div class="sub-item-text">${si.text}</div>
+            ${renderChoices(si.key, ['sim','não','não se aplica'])}
+            ${si.subSub.length>0?`
+            <div class="sub-sub-items ${showSS?'visible':''}">
+              ${si.subSub.map(ss=>`
+              <div class="ssub-item">
+                <div class="ssub-item-text">${ss.text}</div>
+                ${renderChoices(ss.key, ['sim','não','não se aplica'])}
+              </div>`).join('')}
+            </div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function requestColeta(btn){
+  show('coleta', btn);
+  if(currentUser){
+    var lp=document.getElementById('loginPanel'); if(lp) lp.style.display='none';
+    var cf=document.getElementById('coletaForm'); if(cf) cf.style.display='block';
+  } else {
+    var lp=document.getElementById('loginPanel'); if(lp) lp.style.display='block';
+    var cf=document.getElementById('coletaForm'); if(cf) cf.style.display='none';
+    setTimeout(function(){var u=document.getElementById('loginUser');if(u)u.focus();},100);
+  }
+}
+
 function allMultiKeys(){
   const keys=[];
   EQUIPES.forEach(eq=>{
