@@ -1204,6 +1204,8 @@ function updateSyncStatus(){
     el.innerHTML='✅ <b style="color:var(--green)">Conectado ao Google Sheets.</b> Cada auditoria salva é enviada automaticamente ao banco de dados compartilhado.';
   }
 }
+document.addEventListener('DOMContentLoaded', function(){
+try {
 load();fillSectors();fillAuditores();renderForm();renderMultiForm();renderFisicoExtra();updateSyncStatus();
 // Verificar sessão salva
 var _saved=sessionStorage.getItem('hps_user');
@@ -1235,6 +1237,8 @@ if(_saved){
 }
 // Página inicial: sobre
 show('sobre', document.getElementById('tab-sobre'));
+} catch(e){ console.error('Erro na inicialização:', e); }
+}); // DOMContentLoaded
 
 </script>
 </body>
